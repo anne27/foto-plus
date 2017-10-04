@@ -17,12 +17,12 @@ def normal_orb(img1,img2):
     # Draw first 10 matches.
     img3 = cv2.drawMatches(img1,kp1,img2,kp2,matches[:50], None,flags=0)
     plt.imshow(img3),plt.show()
-    good = []
+    '''good = []
     for m,n in matches:
         if m.distance < 0.7*n.distance:
-            good.append(m)
-    src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
-    dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
+            good.append(m)'''
+    src_pts = np.float32([ kp1[m.queryIdx].pt for m in matches ]).reshape(-1,1,2)
+    dst_pts = np.float32([ kp2[m.trainIdx].pt for m in matches ]).reshape(-1,1,2)
 
     M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
     return M,mask
@@ -80,8 +80,8 @@ def detect_face(img):
 cascPath = "haarcascade_frontalface_default.xml"
 face_cascade = cv2.CascadeClassifier(cascPath)
 
-img = cv2.imread('pic1.jpg')
-img1=cv2.imread('pic2.jpg')
+img = cv2.imread('test_images/pic1.jpg')
+img1=cv2.imread('test_images/pic2.jpg')
 # img = cv2.resize(img,None,fx=2, fy=2, interpolation = cv2.INTER_CUBIC)
 
 #Face detection for first image.
@@ -101,7 +101,6 @@ for x in range (0,(person_list1)):
     cv2.destroyAllWindows()
 
 M,mask=normal_orb(roi_color1,roi_color)
-
 
 #int x_max = min((images.at(0)).cols-1, x+radius*3);
 '''
