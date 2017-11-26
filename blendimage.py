@@ -169,12 +169,19 @@ def blendimg(image1path,image2path,mask):
   tmp.append(outimgg)
   tmp.append(outimgr)
   result=cv2.merge(tmp,result)
+  cv2.imshow("blendedimg",result)
+  cv2.waitKey(0)
+  cv2.destroyAllWindows()
+  # blendimg("img1.jpg","img2.jpg",mask)
   cv2.imwrite('blendedpro.jpg',result)
   return result
 
 if __name__=='__main__':
-  image1=cv2.imread("orange.jpg")
+  image1=cv2.imread("img1.jpg")
   mask=np.empty(image1.shape)
-  mask[:int(image1.shape[0]/2),:,:]=0
-  mask[int(image1.shape[0]/2):,:,:]=255
-  blendimg("rsz_1apple.jpg","orange.jpg",mask)
+  mask[:,:int(image1.shape[1]/2),:]=0
+  mask[:,int(image1.shape[1]/2):,:]=255
+  cv2.imshow("a",mask)
+  cv2.waitKey(0)
+  cv2.destroyAllWindows()
+  blendimg("img1.jpg","img2.jpg",mask)
