@@ -405,6 +405,6 @@ for x in range (0,1):
 
 # cv2.imshow('a',roi_color1)
 # cv2.imshow('b',roi_color)
-M,mask=normal_orb(roi_color1,roi_color,face_centers,face_centers1,face_radii)
+M,mask=normal_orb(img1,img,face_centers,face_centers1,face_radii)
 toret=blend_image(img,img1)
 #int x_max = min((images.at(0)).cols-1, x+radius*3);
