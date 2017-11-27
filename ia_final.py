@@ -7,6 +7,8 @@ from scipy.stats import norm
 from scipy.signal import convolve2d
 import math
 import copy
+import operator
+
 
 '''find ROI from face'''
 def findROI(img, face_radii, face_centers, image_no):
@@ -16,13 +18,13 @@ def findROI(img, face_radii, face_centers, image_no):
     centerx=face_centers[image_no][0]
     centery=face_centers[image_no][1]
     radius=face_radii[image_no]
-    x=max(centerx - radius*3/2,0)
-    y=max(centery - radius*3/2,0)
+    x=(int)(max(centerx - radius*3/2,0))
+    y=(int)(max(centery - radius*3/2,0))
     row,col=img.shape[0],img.shape[1]
     x_max = min(col-1, x+radius*3)
     y_max = min(row-1, x+radius*3)
-    w=x_max-x
-    h=y_max-y
+    w=(int)(x_max-x)
+    h=(int)(y_max-y)
     print('hereeee')
     rectimg=cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
 
@@ -233,9 +235,9 @@ def blendimg(image1,image2,mask):
 
 if __name__=='__main__':
   cascPath = "haarcascade_frontalface_default.xml"
-  image1_path="test_images/3/photo1.jpg"        #This is the base image.
+  image1_path="photo1.jpg"        #This is the base image.
   #image2_path="test_images/6/photo2.jpg"       #This is the image from which face is pasted.
-  image2_path="test_images/warped.png"
+  image2_path="warped.png"
   image1=cv2.imread(image1_path)
   image2=cv2.imread(image2_path)
   image1_copy=copy.deepcopy(image1)
@@ -243,6 +245,12 @@ if __name__=='__main__':
   
   face_cascade = cv2.CascadeClassifier(cascPath)
   face_radii, face_centers, person_list=detect_face(image1)
+  
+  keydict = dict(zip(face_radii, face_centers))
+  face_radii.sort(key=keydict.get)
+  face_centers=sorted(face_centers)
+
+  print (face_centers)
 
   for x in range (0,1):
     roi_color,x,y,w,h=findROI(image1,face_radii,face_centers,x)
