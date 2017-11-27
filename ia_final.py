@@ -263,5 +263,5 @@ if __name__=='__main__':
   image2=cv2.resize(image2,(w,h), interpolation = cv2.INTER_AREA)
   image3[y:y+h,x:x+w]=image2
   cv2.imshow('this image',image3)
-  
+
   blendimg(image1_copy,image3,mask)
