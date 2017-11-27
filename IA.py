@@ -3,7 +3,197 @@ import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
 
-def normal_orb(img1,img2):
+import sys
+import os
+import scipy
+from scipy.stats import norm
+from scipy.signal import convolve2d
+import math
+import copy
+import operator
+
+
+
+
+'''split rgb image to its channels'''
+def split_rgb(image):
+    red = None
+    green = None
+    blue = None
+    (blue, green, red) = cv2.split(image)
+    return red, green, blue
+ 
+'''generate a 5x5 kernel'''
+def generating_kernel(a):
+    w_1d = np.array([0.25 - a/2.0, 0.25, a, 0.25, 0.25 - a/2.0])
+    return np.outer(w_1d, w_1d)
+ 
+'''reduce image by 1/2'''
+def ireduce(image):
+    out = None
+    kernel = generating_kernel(0.4)
+    outimage = scipy.signal.convolve2d(image,kernel,'same')
+    out = outimage[::2,::2]
+    return out
+ 
+'''expand image by factor of 2'''
+def iexpand(image):
+    out = None
+    kernel = generating_kernel(0.4)
+    outimage = np.zeros((image.shape[0]*2, image.shape[1]*2), dtype=np.float64)
+    outimage[::2,::2]=image[:,:]
+    out = 4*scipy.signal.convolve2d(outimage,kernel,'same')
+    return out
+ 
+'''create a gaussain pyramid of a given image'''
+def gauss_pyramid(image, levels):
+    output = []
+    output.append(image)
+    tmp = image
+    for i in range(0,levels):
+        tmp = ireduce(tmp)
+        output.append(tmp)
+    return output
+ 
+'''build a laplacian pyramid'''
+def lapl_pyramid(gauss_pyr):
+    output = []
+    k = len(gauss_pyr)
+    for i in range(0,k-1):
+        gu = gauss_pyr[i]
+        egu = iexpand(gauss_pyr[i+1])
+        if egu.shape[0] > gu.shape[0]:
+             egu = np.delete(egu,(-1),axis=0)
+        if egu.shape[1] > gu.shape[1]:
+            egu = np.delete(egu,(-1),axis=1)
+        output.append(gu - egu)
+    output.append(gauss_pyr.pop())
+    return output
+
+'''Blend the two laplacian pyramids by weighting them according to the mask.'''
+def blend(lapl_pyr_white, lapl_pyr_black, gauss_pyr_mask):
+    blended_pyr = []
+    k= len(gauss_pyr_mask)
+    for i in range(0,k):
+     p1= gauss_pyr_mask[i]*lapl_pyr_white[i]
+     p2=(1 - gauss_pyr_mask[i])*lapl_pyr_black[i]
+     blended_pyr.append(p1 + p2)
+    return blended_pyr
+
+'''Reconstruct the image based on its laplacian pyramid.'''
+def collapse(lapl_pyr):
+    output = None
+    output = np.zeros((lapl_pyr[0].shape[0],lapl_pyr[0].shape[1]), dtype=np.float64)
+    for i in range(len(lapl_pyr)-1,0,-1):
+        lap = iexpand(lapl_pyr[i])
+        lapb = lapl_pyr[i-1]
+        if lap.shape[0] > lapb.shape[0]:
+            lap = np.delete(lap,(-1),axis=0)
+        if lap.shape[1] > lapb.shape[1]:
+            lap = np.delete(lap,(-1),axis=1)
+        tmp = lap + lapb
+        lapl_pyr.pop()
+        lapl_pyr.pop()
+        lapl_pyr.append(tmp)
+        output = tmp
+    return output
+
+#functions takes in the 2 images to be blended along with a mask matrix which should have 0 where not to be blended and 1 where img2 should replace img1
+
+def blendimg(image1,image2,mask):
+  mask=mask
+  r1=None
+  g1=None
+  b1=None
+  r2=None
+  g2=None
+  b2=None
+  rm=None
+  gm=None
+  bm=None
+
+  (r1,g1,b1)=split_rgb(image1)
+  (r2,g2,b2)=split_rgb(image2)
+  (rm,gm,bm)=split_rgb(mask)
+
+  r1=r1.astype(float)
+  g1=g1.astype(float)
+  b1=b1.astype(float)
+
+  r2=r2.astype(float)
+  g2=g2.astype(float)
+  b2=b2.astype(float)
+
+  rm=rm.astype(float)/255
+  gm=gm.astype(float)/255
+  bm=bm.astype(float)/255
+
+  #Automaticallyfigureoutthesize
+  min_size=min(r1.shape)
+  depth=int(math.floor(math.log(min_size,2)))-4#atleast16x16atthehighestlevel.
+
+  gauss_pyr_maskr=gauss_pyramid(rm,depth)
+  gauss_pyr_maskg=gauss_pyramid(gm,depth)
+  gauss_pyr_maskb=gauss_pyramid(bm,depth)
+
+  gauss_pyr_image1r=gauss_pyramid(r1,depth)
+  gauss_pyr_image1g=gauss_pyramid(g1,depth)
+  gauss_pyr_image1b=gauss_pyramid(b1,depth)
+
+  gauss_pyr_image2r=gauss_pyramid(r2,depth)
+  gauss_pyr_image2g=gauss_pyramid(g2,depth)
+  gauss_pyr_image2b=gauss_pyramid(b2,depth)
+
+  lapl_pyr_image1r=lapl_pyramid(gauss_pyr_image1r)
+  lapl_pyr_image1g=lapl_pyramid(gauss_pyr_image1g)
+  lapl_pyr_image1b=lapl_pyramid(gauss_pyr_image1b)
+
+  lapl_pyr_image2r=lapl_pyramid(gauss_pyr_image2r)
+  lapl_pyr_image2g=lapl_pyramid(gauss_pyr_image2g)
+  lapl_pyr_image2b=lapl_pyramid(gauss_pyr_image2b)
+
+  outpyrr=blend(lapl_pyr_image2r,lapl_pyr_image1r,gauss_pyr_maskr)
+  outpyrg=blend(lapl_pyr_image2g,lapl_pyr_image1g,gauss_pyr_maskg)
+  outpyrb=blend(lapl_pyr_image2b,lapl_pyr_image1b,gauss_pyr_maskb)
+
+  outimgr=collapse(blend(lapl_pyr_image2r,lapl_pyr_image1r,gauss_pyr_maskr))
+  outimgg=collapse(blend(lapl_pyr_image2g,lapl_pyr_image1g,gauss_pyr_maskg))
+  outimgb=collapse(blend(lapl_pyr_image2b,lapl_pyr_image1b,gauss_pyr_maskb))
+  #blendingsometimesresultsinslightlyoutofboundnumbers.
+  outimgr[outimgr<0]=0
+  outimgr[outimgr>255]=255
+  outimgr=outimgr.astype(np.uint8)
+
+  outimgg[outimgg<0]=0
+  outimgg[outimgg>255]=255
+  outimgg=outimgg.astype(np.uint8)
+
+  outimgb[outimgb<0]=0
+  outimgb[outimgb>255]=255
+  outimgb=outimgb.astype(np.uint8)
+
+  result=np.zeros(image1.shape,dtype=image1.dtype)
+  tmp=[]
+  tmp.append(outimgb)
+  tmp.append(outimgg)
+  tmp.append(outimgr)
+  result=cv2.merge(tmp,result)
+  cv2.imshow("blendedimg",result)
+  cv2.waitKey(0)
+  cv2.destroyAllWindows()
+  # blendimg("img1.jpg","img2.jpg",mask)
+  cv2.imwrite('blendedpro.jpg',result)
+  return result
+
+
+
+
+
+
+
+
+
+def normal_orb(img1,img2,face_centers,face_centers1,face_radii):
     # Initiate SIFT detector
     orb = cv2.ORB_create()
     # find the keypoints and descriptors with SIFT
@@ -26,10 +216,35 @@ def normal_orb(img1,img2):
     dst_pts = np.float32([ kp2[m.trainIdx].pt for m in matches ]).reshape(-1,1,2)
 
     M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
-    im_out=cv2.warpPerspective(img1,M,(img2.shape[1],img2.shape[0])) #img2 is destination image.
-    cv2.imshow("Warped img",im_out)
-    cv2.imwrite('warped.jpg',im_out)
+    # cv2.imshow("img1 isssss",img1)
+    # cv2.waitKey(0)
+    # cv2.imshow("img2 isssss",img2)
+
+
     cv2.waitKey(0)
+    imge1 = cv2.imread('photo1.jpg')
+    imge2=cv2.imread('photo2.jpg')
+
+    im_out=cv2.warpPerspective(imge2,M,(imge2.shape[1],imge2.shape[0])) #img2 is destination image.
+    # cv2.imshow("Warped img",im_out)
+
+    # cv2.imwrite('warped.jpg',im_out)
+    # cv2.waitKey(0)
+    fccntr=[]
+    fccntr.append(face_centers1[0])
+    fccntr=np.array(fccntr)
+    print (fccntr)
+    print (M)
+
+
+    dst = cv2.perspectiveTransform(fccntr[None,:,:],M)
+    print (dst)
+
+    msk=np.empty(imge1.shape)
+    cv2.circle(msk,((int)(dst[0,0,0]),(int)(dst[0,0,1])),(int)(1.2*face_radii[0]),(255,255,255),-1)
+
+    blendimg(imge1,im_out,msk)
+
     return M,mask
     #M,mask=cv2.findHomography(np.array(kp1),np.array(kp2),cv2.RANSAC, 5.0)
 
@@ -42,20 +257,20 @@ def findROI(img, face_radii, face_centers, image_no):
     centerx=face_centers[image_no][0]
     centery=face_centers[image_no][1]
     radius=face_radii[image_no]
-    x=max(centerx - radius*3/2,0)
-    y=max(centery - radius*3/2,0)
+    x=(int)(max(centerx - radius*3/2,0))
+    y=(int)(max(centery - radius*3/2,0))
     row,col=img.shape[0],img.shape[1]
     x_max = min(col-1, x+radius*3)
     y_max = min(row-1, x+radius*3)
-    w=x_max-x
-    h=y_max-y 
+    w=(int)(x_max-x)
+    h=(int)(y_max-y) 
     #rectimg=cv2.rectangle(img,(x,y),(x+w,y+h),(255,0,0),2)
 
     #Tryna crop the image out.
     roi_gray1 = gray[y:y+h, x:x+w]
     roi_color1 = img[y:y+h, x:x+w]
-    cv2.imshow("cropped",roi_color1)
-    cv2.waitKey(0)
+    # cv2.imshow("cropped",roi_color1)
+    # cv2.waitKey(0)
     return roi_color1,roi_gray1
 
 def detect_face(pic):
@@ -78,9 +293,9 @@ def detect_face(pic):
         face_centers.append(center)
         #person_list.append(faces)
         person_list+=1
-    cv2.imshow('imgdet',pic)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('imgdet',pic)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
     return face_radii, face_centers, person_list        #Person_list is the no. of people.
 
 import cv2
@@ -153,8 +368,8 @@ def blend_image(A,B):
 cascPath = "haarcascade_frontalface_default.xml"
 face_cascade = cv2.CascadeClassifier(cascPath)
 
-img = cv2.imread('test_images/3/photo1.jpg')
-img1=cv2.imread('test_images/3/photo2.jpg')
+img = cv2.imread('photo1.jpg')
+img1=cv2.imread('photo2.jpg')
 
 # img = cv2.resize(img,None,fx=2, fy=2, interpolation = cv2.INTER_CUBIC)
 
@@ -163,7 +378,7 @@ pic=deepcopy(img)
 pic1=deepcopy(img1)
 face_radii, face_centers, person_list=detect_face(pic)
 face_radii1, face_centers1, person_list1=detect_face(pic1)
-cv2.imshow('after face',img)
+# cv2.imshow('after face',img)
 
 
 cv2.namedWindow('img',cv2.WINDOW_NORMAL)
@@ -178,18 +393,18 @@ face_centers1=sorted(face_centers1)
 
 for x in range (0,1):
     roi_color=findROI(img,face_radii,face_centers,x)[0]
-    cv2.imshow('img',img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('img',img)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
 for x in range (0,1):
     roi_color1=findROI(img1,face_radii1,face_centers1,x)[0]
-    cv2.imshow('img1',img1)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('img1',img1)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
-cv2.imshow('a',roi_color1)
-cv2.imshow('b',roi_color)
-M,mask=normal_orb(roi_color1,roi_color)
+# cv2.imshow('a',roi_color1)
+# cv2.imshow('b',roi_color)
+M,mask=normal_orb(roi_color1,roi_color,face_centers,face_centers1,face_radii)
 toret=blend_image(img,img1)
 #int x_max = min((images.at(0)).cols-1, x+radius*3);
