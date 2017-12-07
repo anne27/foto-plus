@@ -23,7 +23,16 @@ Initial images:
 
 Result:
 
-![alt text](https://raw.githubusercontent.com/anne27/foto-plus/blob/master/test_images/result.jpg)
+![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/result.jpg)
+
+Initial images:
+
+![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic1.jpg)
+![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic2.jpg)
+
+Result:
+
+![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/result_1.jpg)
 
 
 ## Future Work
