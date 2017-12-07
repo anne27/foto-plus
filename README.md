@@ -27,8 +27,8 @@ Result:
 
 Initial images:
 
-![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic1.jpg)
-![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic2.jpg)
+![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic1.JPG)
+![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic2.JPG)
 
 Result:
 
