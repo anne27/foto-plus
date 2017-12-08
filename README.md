@@ -20,21 +20,21 @@ Initial images:
 
 <img src="https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/photo1.jpg" alt="alt text" width="50%" height="50%">
 
-![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/photo2.jpg)
+<img src="https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/photo2.jpg" alt="alt text" width="50%" height="50%">
 
 Result:
 
-![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/result.jpg)
+<img src="https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/result.jpg" alt="alt text" width="50%" height="50%">
 
 Initial images:
 
-![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic1.JPG)
-![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic2.JPG)
+<img src="https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic1.JPG" alt="alt text" width="50%" height="50%">
+
+<img src="https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic2.JPG" alt="alt text" width="50%" height="50%">
 
 Result:
 
-![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/result_1.jpg)
-
+<img src="https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/result_1.jpg" alt="alt text" width="50%" height="50%">
 
 ## Future Work
 
