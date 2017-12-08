@@ -18,7 +18,8 @@ The code requires Python 2.7 and OpenCV version 2.4.9 to run.
 
 Initial images:
 
-![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/photo1.jpg)
+<img src="https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/photo1.jpg" alt="alt text" width="whatever" height="whatever">
+
 ![alt text](https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/photo2.jpg)
 
 Result:
