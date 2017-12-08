@@ -28,13 +28,13 @@ Result:
 
 Initial images:
 
-<img src="https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic1.JPG" alt="alt text" width="50%" height="50%">
+<img src="https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic1.JPG" alt="alt text" width="40%" height="40%">
 
-<img src="https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic2.JPG" alt="alt text" width="50%" height="50%">
+<img src="https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/pic2.JPG" alt="alt text" width="40%" height="40%">
 
 Result:
 
-<img src="https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/result_1.jpg" alt="alt text" width="50%" height="50%">
+<img src="https://raw.githubusercontent.com/anne27/foto-plus/master/test_images/result_1.jpg" alt="alt text" width="40%" height="40%">
 
 ## Future Work
 
