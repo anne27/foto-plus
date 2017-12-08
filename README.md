@@ -6,7 +6,7 @@ Has it ever occurred where you had to click your group photo bazillion number of
 
 ### Prerequisites
 
-The code requires Python 2.7 and OpenCV version 3.2 to run.
+The code requires Python 2.7 and OpenCV version 2.4.9 to run.
 
 ### Usage
 
